@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 
 bool get_bytes(int n, void *bytes_out)
@@ -44,11 +45,56 @@ uint32_t get_random_u32(void)
 	return val;
 }
 
+static uint32_t string_to_u32(const char *s)
+{
+	int n;
+	uint32_t v;
+
+	n = sscanf(s, "%"PRIu32, &v);
+
+	if(n != 1) {
+		fprintf(stderr, "Error: Invalid number: %s\n", s);
+		exit(1);
+	}
+
+	return v;
+}
+
+uint32_t get_random_u32_range(uint32_t range_min, uint32_t range_max)
+{
+	uint32_t range_size;
+	uint32_t val;
+
+	range_size = range_max - range_min + 1;
+
+	val = range_min + (get_random_u32() % range_size);
+
+	return val;
+}
+
 int main(int argc, char **argv)
 {
 	uint32_t val;
 
-	val = get_random_u32();
+	if(argc == 1) {
+		val = get_random_u32();
+	} else {
+		uint32_t range_min;
+		uint32_t range_max;
+
+		if(argc == 2) {
+			range_min = 0;
+			range_max = string_to_u32(argv[1]);
+		} else if(argc == 3) {
+			range_min = string_to_u32(argv[1]);
+			range_max = string_to_u32(argv[2]);
+		} else {
+			fprintf(stderr, "Error: Invalid args\n");
+			exit(1);
+		}
+
+		val = get_random_u32_range(range_min, range_max);
+	}
 
 	printf("%u\n", val);
 
